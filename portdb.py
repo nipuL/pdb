@@ -15,3 +15,4 @@ class XMLPort(XMLObject):
     def _process_files(self, node):
         self.files = XMLResult().feed(XMLFiles, node)
 
+    

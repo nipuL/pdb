@@ -28,7 +28,3 @@ class Search(Request):
         super(Search, self).__init__(url, {'a':'search', 'q':query})
         if strict:
             self.parameters.update({'strict':'true'})
-
-if __name__ == '__main__':
-    url = 'http://crux.nu/~lucas/portdb/'
-    print Search(url,'port').read()
