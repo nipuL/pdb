@@ -1,7 +1,4 @@
-import urllib, urllib2
-
-from portdb import *
-from xmlobj import *
+import urllib
 
 class Request(object):
     def __init__(self, url, parameters):
@@ -10,7 +7,7 @@ class Request(object):
         self.url = url
 
     def read(self):
-        return urllib2.urlopen('?'.join((
+        return urllib.urlopen('?'.join((
                     self.url,
                     urllib.urlencode(self.parameters)
                     ))).read()
