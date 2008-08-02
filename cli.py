@@ -43,7 +43,7 @@ class Search(Action, query.Search):
 
     def display(self):
         for port in self.result:
-            print port.name
+            print "[%s] %s" % (port.repo, port.name)
 
 class Repo(Action, query.Repo):
     def __init__(self, options):
