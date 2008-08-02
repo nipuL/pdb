@@ -2,7 +2,7 @@ from xmlobj import XMLObject, XMLResult
 
 class XMLIndex(XMLObject):
     ROOT = "repo"
-    ATTRS = ["name", "maintainer", "type", "url", "count"]
+    ATTRS = ["name", "maintainer", "type", "url", "ports"]
 
 class XMLFiles(XMLObject):
     ROOT = "files"
