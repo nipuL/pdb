@@ -24,4 +24,4 @@ class Search(Request):
     def __init__(self, url, query, strict=False):
         super(Search, self).__init__(url, {'a':'search', 'q':query})
         if strict:
-            self.parameters.update({'strict':'true'})
+            self.parameters.update({'s':'true'})

@@ -45,11 +45,17 @@ class Index(Action, query.Index):
 class Search(Action, query.Search):
     def __init__(self, options):
         Action.__init__(self, portdb.XMLPort)
-        query.Search.__init__(self, options.url, options.query)
+        query.Search.__init__(self, options.url, options.query, options.strict)
+        self.options = options
 
     def display(self):
         for port in self.result:
-            print "[%s] %s" % (port.repo, port.name)
+            if not self.options.repo or port.repo in self.options.repo:
+                if not self.options.info:
+                    self.options.info = ["name"]
+                for field in self.options.info:
+                    print getattr(port, field),
+                print
 
 class Repo(Action, query.Repo):
     def __init__(self, options):
@@ -84,7 +90,12 @@ class PDB(CLI):
          { 'help': 'only display from given repos',
            'type': 'str',
            'action': 'callback',
-           'callback': 'varargs'}]]
+           'callback': 'varargs'}],
+        ['-s',
+         '--strict',
+         { 'default': False,
+           'action': 'store_true',
+           'help': 'perform a strict search (only for search action)' }]]
 
     ACTIONS = {'index': Index, 'search': Search, 'repo': Repo}
 
