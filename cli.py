@@ -31,10 +31,16 @@ class Index(Action, query.Index):
     def __init__(self, options):
         Action.__init__(self, portdb.XMLIndex)
         query.Index.__init__(self, options.url)
+        self.options = options
 
     def display(self):
         for repo in self.result:
-            print repo.name
+            if not self.options.repo or repo.name in self.options.repo:
+                if not self.options.info:
+                    self.options.info = ["name"]
+                for field in self.options.info:
+                    print getattr(repo, field),
+                print
  
 class Search(Action, query.Search):
     def __init__(self, options):
@@ -58,18 +64,27 @@ class PDB(CLI):
     OPTIONS = [
         ['-a',
          '--action',
-         { 'dest': 'action',
-           'default': 'index',
+         { 'default': 'index',
            'help': 'specify the action to do on the portdb',
-           'metavar':'TYPE',
-           'type':'str',
+           'type': 'str',
            'action':'callback',
            'callback': 'set_action' }],
         ['-u',
          '--url',
-         { 'dest': 'url',
-           'default': 'http://crux.nu/~lucas/portdb/',
-           'help': 'set the url of the portdb' }]]
+         { 'default': 'http://crux.nu/~lucas/portdb/',
+           'help': 'set the url of the portdb' }],
+        ['-i',
+         '--info',
+         { 'help': 'print extended information',
+           'type': 'str',
+           'action': 'callback',
+           'callback': 'varargs' }],
+        ['-r',
+         '--repo',
+         { 'help': 'only display from given repos',
+           'type': 'str',
+           'action': 'callback',
+           'callback': 'varargs'}]]
 
     ACTIONS = {'index': Index, 'search': Search, 'repo': Repo}
 
@@ -85,3 +100,16 @@ class PDB(CLI):
         if value not in self.ACTIONS.keys():
             raise optparse.OptionValueError, "invalid action '%s'" % value
         parser.values.action = value
+
+    def varargs(self, option, opt_str, value, parser):
+        value = [value]
+        rargs = parser.rargs
+        while rargs:
+            arg = rargs[0]
+            if ((arg[:2] == "--" and len(arg) > 2) or
+                (arg[:1] == "-" and len(arg) > 1 and arg[1] != "-")):
+                break
+            else:
+                value.append(arg)
+                del rargs[0]
+        setattr(parser.values, option.dest, value)
