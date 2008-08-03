@@ -1,4 +1,5 @@
 pdb
+pdb.1
 setup.py
 crux/pdb/__init__.py
 crux/pdb/port.py
