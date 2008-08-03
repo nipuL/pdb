@@ -1,0 +1,111 @@
+.TH pdb 1
+.SH NAME
+pdb \- query the CRUX portdb from the command line
+.SH SYNOPSIS
+.B pdb [options] [query]
+.SH DESCRIPTION
+.B pdb
+sends queries to the online
+.I CRUX
+ports database and displays the results.
+.B pdb 
+is able to get the list of repositories, list of ports in a repository and search for ports.
+.B pdb
+is also able choose which fields to display and filter results to a list of specific repositories.
+
+.SH OPTIONS
+.B pdb
+has a number of options available:
+
+.TP
+.B "\-a, \-\-action"
+Set the type of action to take when querying the portdb. See
+.B ACTIONS
+for more information.
+
+.TP
+.B "\-i, \-\-info"
+Choose which fields to display for each result your query finds.
+.TP
+
+.TP
+.B "\-r, \-\-repo"
+Specify which repositories to display results from.
+
+.TP
+.B "\-s, \-\-strict"
+Only find ports that exactly match the name when doing a port search.
+
+.TP
+.B "\-u, \-\-url"
+Specify an alternative location of a portdb, this will probably never need to be used.
+
+
+.SH ACTIONS
+
+.SS index
+This is the default action if no action is defined on the command line. The index action gives a list of all repositories in the portdb. The index action returns the following fields:
+
+.B name
+\- the name of the repository
+
+.B type
+\- the type of repository
+
+.B maintainer
+\- the email address of the maintainer in "nospam" format
+
+.B url
+\- the repository URL (may be web browsable)
+
+.B ports
+\- the number of ports in the repository
+
+.SS repo
+This action gives the list of ports available in a given repository, and has the following fields:
+
+.B name
+\- the name of the port
+
+.B repo
+\- the name of the repo the port belongs to
+
+.B command
+\- the command used to download the port
+
+.SS search
+This action searches for a port. As both the repo and search action return port objects, the valid fields for this action are the same as the repo action.
+
+.SH EXAMPLES
+
+.SS List all the repositories
+.nf
+$ pdb
+core
+opt
+contrib
+ ...
+.fi
+.SS List url of a specific repository
+.nf
+$ pdb \-a index \-i url \-r contrib
+crux.nu::ports/crux\-2.4/contrib/
+.fi
+.SS Show the download command for a port in a repository
+.nf
+$ pdb \-r core \-i command \-a search \-s ports
+rsync -aqz crux.nu::ports/crux\-2.4/core/ports ports
+.fi
+
+.SH SEE ALSO
+.BI http://crux.nu/~lucas/portdb
+
+.SH BUGS
+Of course there are bugs, but I prefer to call them features.
+
+There is a secret field for port objects called "files" but it isn't correctly implemented yet.
+
+\-\-repo and \-\-info use a very basic variable argument length algorithm. If you are going to use these, use them before the \-\-action option.
+
+.SH AUTHOR
+Lucas Hazel <lucas@die.net.au>
