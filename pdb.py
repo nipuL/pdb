@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 
-import cli
+from crux.pdb import cli
 
 def main():
     cli.PDB().run(sys.argv[1:])
