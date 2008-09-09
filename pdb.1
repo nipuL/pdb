@@ -2,7 +2,7 @@
 .SH NAME
 pdb \- query the CRUX portdb from the command line
 .SH SYNOPSIS
-.B pdb [options] [query]
+.B pdb <action> [query] [options]
 .SH DESCRIPTION
 .B pdb
 sends queries to the online
@@ -16,12 +16,6 @@ is also able choose which fields to display and filter results to a list of spec
 .SH OPTIONS
 .B pdb
 has a number of options available:
-
-.TP
-.B "\-a, \-\-action"
-Set the type of action to take when querying the portdb. See
-.B ACTIONS
-for more information.
 
 .TP
 .B "\-i, \-\-info"
@@ -76,11 +70,13 @@ This action gives the list of ports available in a given repository, and has the
 .SS search
 This action searches for a port. As both the repo and search action return port objects, the valid fields for this action are the same as the repo action.
 
+.SS pull
+This action download a port, and all it's entire dependency chain
 .SH EXAMPLES
 
 .SS List all the repositories
 .nf
-$ pdb
+$ pdb index
 core
 opt
 contrib
@@ -88,12 +84,12 @@ contrib
 .fi
 .SS List url of a specific repository
 .nf
-$ pdb \-a index \-i url \-r contrib
+$ pdb index \-i url \-r contrib
 crux.nu::ports/crux\-2.4/contrib/
 .fi
 .SS Show the download command for a port in a repository
 .nf
-$ pdb \-r core \-i command \-a search \-s ports
+$ pdb search ports \-s \-r core \-i command
 rsync -aqz crux.nu::ports/crux\-2.4/core/ports ports
 .fi
 
@@ -102,10 +98,6 @@ rsync -aqz crux.nu::ports/crux\-2.4/core/ports ports
 
 .SH BUGS
 Of course there are bugs, but I prefer to call them features.
-
-There is a secret field for port objects called "files" but it isn't correctly implemented yet.
-
-\-\-repo and \-\-info use a very basic variable argument length algorithm. If you are going to use these, use them before the \-\-action option.
 
 .SH AUTHOR
 Lucas Hazel <lucas@die.net.au>

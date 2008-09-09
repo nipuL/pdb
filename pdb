@@ -30,8 +30,13 @@ class Action(XMLResult):
 
     def query(self):
         self.result = self.feed(self.xmlcls, minidom.parseString(self.read()))
-        
 
+    def filter_repos(self):
+        if not self.options.repo:
+            return self.result
+        return [port for port in self.result if port.repo in self.options.repo]
+
+        
 class Index(Action, query.Index):
     def __init__(self, options):
         Action.__init__(self, portdb.XMLIndex)
@@ -39,13 +44,13 @@ class Index(Action, query.Index):
         self.options = options
 
     def display(self):
-        for repo in self.result:
-            if not self.options.repo or repo.name in self.options.repo:
-                if not self.options.info:
-                    self.options.info = ["name"]
-                for field in self.options.info:
-                    print getattr(repo, field),
-                print
+        repos = self.filter_repos()
+        for repo in repos:
+            if not self.options.info:
+                self.options.info = ["name"]
+            for field in self.options.info:
+                print getattr(repo, field),
+            print
  
 class Search(Action, query.Search):
     def __init__(self, options):
@@ -69,11 +74,6 @@ class Search(Action, query.Search):
                 else:
                     print getattr(port, field),
             print
-
-    def filter_repos(self):
-        if not self.options.repo:
-            return self.result
-        return [port for port in self.result if port.repo in self.options.repo]
 
 class Repo(Action, query.Repo):
     def __init__(self, options):
@@ -121,13 +121,6 @@ class Pull(Search, query.Search):
 
 class PDB(CLI):
     OPTIONS = [
-        ['-a',
-         '--action',
-         { 'default': 'index',
-           'help': 'specify the action to do on the portdb',
-           'type': 'str',
-           'action':'callback',
-           'callback': 'set_action' }],
         ['-u',
          '--url',
          { 'default': 'http://crux.nu/~lucas/portdb/',
@@ -158,15 +151,17 @@ class PDB(CLI):
     def run(self, args):
         self.parse_args(args)
         if self.largs:
-            self.values.query = self.largs[0]
-        action = self.ACTIONS[self.values.action](self.values)
-        action.query()
-        action.display()
+            self.set_action(self.largs[0])
+            if self.largs[1:]:
+                self.values.query = self.largs[1:][0]
+            action = self.ACTIONS[self.values.action](self.values)
+            action.query()
+            action.display()
 
-    def set_action(self, option, opt_str, value, parser):
+    def set_action(self,value):
         if value not in self.ACTIONS.keys():
             raise optparse.OptionValueError, "invalid action '%s'" % value
-        parser.values.action = value
+        self.values.action = value
 
     def varargs(self, option, opt_str, value, parser):
         value = [value]
