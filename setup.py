@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='pdb',
-      version='0.0a',
+      version='0.1',
       description='CRUX PortDB module',
       author='Lucas Hazel',
       author_email='lucas@die.net.au',
