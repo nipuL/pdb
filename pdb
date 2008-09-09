@@ -1,8 +1,12 @@
 #!/usr/bin/env python
+import commands
 import optparse
+import os
 import sys
+import urllib
 from xml.dom import minidom
 
+from crux.port import PkgfileParser
 from crux.pdb import portdb, query
 from crux.pdb.xmlobj import XMLResult
 
@@ -50,13 +54,26 @@ class Search(Action, query.Search):
         self.options = options
 
     def display(self):
-        for port in self.result:
-            if not self.options.repo or port.repo in self.options.repo:
-                if not self.options.info:
-                    self.options.info = ["name"]
-                for field in self.options.info:
+        for port in self.filter_repos():
+            if not self.options.info:
+                self.options.info = ["name"]
+            for field in self.options.info:
+                if field == "files":
+                    files = getattr(port, field)
+                    print
+                    for file in ('pkgfile','md5sum','footprint'):
+                        try:
+                            print getattr(files,file)
+                        except AttributeError:
+                            pass
+                else:
                     print getattr(port, field),
-                print
+            print
+
+    def filter_repos(self):
+        if not self.options.repo:
+            return self.result
+        return [port for port in self.result if port.repo in self.options.repo]
 
 class Repo(Action, query.Repo):
     def __init__(self, options):
@@ -67,6 +84,41 @@ class Repo(Action, query.Repo):
         for port in self.result:
             print port.name
     
+class Pull(Search, query.Search):
+    def __init__(self, options):
+        Search.__init__(self, options)
+        query.Search.__init__(self, options.url, options.query, options.strict)
+        self.options = options
+
+    def display(self):
+        ports = self.filter_repos()
+        if len(ports) != 1:
+            print "Unique port not found, try using --repo or --strict"
+            self.options.info = ["repo","name"]
+            Search.display(self)
+            return
+        port = ports[0]
+        print "Getting %s" % port.name,
+        status,output = commands.getstatusoutput(port.command)
+        if status:
+            print "Could not download %s" % port.name
+            return
+        pkgfile = PkgfileParser()
+        pkgfile.parse_file('%s/Pkgfile' % port.name)
+        deps = pkgfile.meta_data.get('depends on', [])
+        print deps
+        for dep in deps:
+            if os.path.exists(dep):
+                print "%s already pulled" % dep
+            else:
+                options = self.options
+                options.query = dep
+                options.strict = True
+                pull = Pull(options)
+                pull.query()
+                pull.display()
+            
+
 class PDB(CLI):
     OPTIONS = [
         ['-a',
@@ -98,7 +150,10 @@ class PDB(CLI):
            'action': 'store_true',
            'help': 'perform a strict search (only for search action)' }]]
 
-    ACTIONS = {'index': Index, 'search': Search, 'repo': Repo}
+    ACTIONS = { 'index': Index, 
+                'search': Search, 
+                'repo': Repo,
+                'pull': Pull }
 
     def run(self, args):
         self.parse_args(args)
